@@ -232,14 +232,28 @@
       to{ transform: translateX(-100%); }
     }
 
-    /* موبايل */
-    @media (max-width:420px){
-      .brand{ padding: 14px 16px; gap: 10px; }
-      .brand img{ height: 78px; }
-      .brand span{ font-size: 12px; }
-      h1{ font-size:20px; }
-      .btn{ font-size:14px; padding:13px 12px; }
-    }
+    /* تحسين الشعار للجوال */
+@media (max-width: 480px){
+  .brand{
+    padding: 10px 12px;     /* تقليل الإطار */
+    gap: 8px;
+  }
+
+  .brand img{
+    height: 56px;           /* تصغير الشعار */
+  }
+
+  .brand span{
+    font-size: 11px;        /* تصغير النص */
+    line-height: 1.2;
+  }
+
+  /* ننزل المحتوى شوي عشان ما يتغطى */
+  .wrapper{
+    padding-top: 140px;
+  }
+}
+
   </style>
 </head>
 
