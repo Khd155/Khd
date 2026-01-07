@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>إدارة تقويم الأداء المعرفي والمهاري</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --w: 560px;
+      --radius: 22px;
+      --glass: rgba(255,255,255,.14);
+      --glass-border: rgba(255,255,255,.18);
+      --shadow: 0 22px 70px rgba(0,0,0,.45);
+
+      --bar-h: 44px;      /* ارتفاع شريط العد */
+      --tick-h: 36px;     /* ارتفاع الشريط المتحرك */
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:"Cairo", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      min-height:100vh;
+      color:#fff;
+      background:#000;
+      overflow-x:hidden;
+    }
+
+    /* خلفية */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.55)),
+        url("bg.png") center/cover no-repeat;
+      z-index:-2;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index:-1;
+    }
+
+    /* شعار (بالشكل اللي تبيه) */
+    .brand{
+      position: fixed;
+      top: 0;
+      right: 0;
+
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      padding: 18px 22px;
+      z-index: 1000;
+
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+
+      border-bottom-left-radius: 18px;
+    }
+    .brand img{
+      height: 150px;
+      width: auto;
+    }
+    .brand span{
+      font-size: 13px;
+      line-height: 1.3;
+      opacity: .95;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* تغطية خفيفة (اختياري) */
+    .overlay{ display:none; }
+
+    /* الوسط */
+    .wrapper{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:120px 16px calc(var(--bar-h) + var(--tick-h) + 70px);
+    }
+
+    .container{
+      width:min(var(--w), 95vw);
+      padding:22px 18px 18px;
+      border-radius: var(--radius);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    h1{
+      margin:0;
+      text-align:center;
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    h2{
+      margin:6px 0 0;
+      text-align:center;
+      font-size:13px;
+      font-weight:600;
+      opacity:.85;
+    }
+
+    .year{
+      margin:12px 0 16px;
+      text-align:center;
+      font-size:14px;
+      font-weight:700;
+      color:#ffd97a;
+      line-height:1.7;
+    }
+
+    .buttons{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .btn{
+      display:block;
+      text-decoration:none;
+      text-align:center;
+      padding:14px 14px;
+      border-radius: 12px;
+      font-weight:900;
+      font-size:15px;
+      color:#111;
+      box-shadow: 0 10px 18px rgba(0,0,0,.20);
+      transition: transform .12s ease, filter .12s ease;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .btn:hover{ transform: translateY(-2px); filter: brightness(1.03); }
+    .btn:active{ transform: translateY(0) scale(.995); }
+
+    .btn.gray{ background:#d7dbe1; }
+    .btn{ background:#ffd27a; }             /* الافتراضي أصفر */
+    .btn.secondary{ background:#8ad9ff; }    /* أزرق */
+    .btn.dark{ background:#cfd6de; }         /* رمادي داكن */
+    .btn.btn-central{ background:#ece6ff; }  /* بنفسجي فاتح */
+    .btn.btn-lavender{ background:#e9e4ff; } /* لافندر */
+
+    /* التواصل (نص مو زر) */
+    .contact{
+      margin-top:16px;
+      padding-top:12px;
+      text-align:center;
+      font-size:13px;
+      font-weight:700;
+      color:#e6eef6;
+      border-top:1px dashed rgba(255,255,255,.25);
+    }
+    .contact a{
+      direction:ltr;
+      unicode-bidi:bidi-override;
+      font-family: ui-monospace, Menlo, Consolas, "Cairo", sans-serif;
+      color:#9fe0ff;
+      text-decoration:none;
+    }
+    .contact a:hover{ text-decoration:underline; }
+
+    /* شريط العد التنازلي (ثابت فوق المتحرك) */
+    .countdown-bar{
+      position:fixed;
+      left:0; right:0;
+      bottom: var(--tick-h);
+      height: var(--bar-h);
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+
+      background: rgba(10,25,40,.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top:1px solid rgba(255,255,255,.12);
+      z-index:999;
+
+      font-size:13px;
+      font-weight:800;
+      color:#ffe08a;
+      padding:0 12px;
+      text-align:center;
+    }
+
+    /* الشريط المتحرك (تحت) */
+    .ticker{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      height: var(--tick-h);
+      overflow:hidden;
+
+      background: rgba(15,35,55,.80);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top:1px solid rgba(255,255,255,.12);
+      z-index:998;
+    }
+    .ticker-track{
+      display:inline-block;
+      white-space:nowrap;
+      padding-left:100%;
+      animation:tickerMove 28s linear infinite;
+    }
+    .ticker-track a{
+      display:inline-block;
+      padding-right:100%;
+      color:#9fe0ff;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:800;
+    }
+    @keyframes tickerMove{
+      from{ transform: translateX(0); }
+      to{ transform: translateX(-100%); }
+    }
+
+    /* موبايل */
+    @media (max-width:420px){
+      .brand{ padding: 14px 16px; gap: 10px; }
+      .brand img{ height: 78px; }
+      .brand span{ font-size: 12px; }
+      h1{ font-size:20px; }
+      .btn{ font-size:14px; padding:13px 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- الشعار الجديد -->
+  <div class="brand">
+    <span>وزارة التعليم<br>Ministry of Education</span>
+    <img src="logo.png" alt="شعار تعليم جدة">
+  </div>
+
+  <div class="overlay"></div>
+
+  <div class="wrapper">
+    <div class="container">
+
+      <h1>إدارة تقويم الأداء المعرفي والمهاري</h1>
+      <h2>تعليم جدة</h2>
+
+      <div class="year">
+        اختبارات نهاية الفصل الدراسي الأول<br>
+        للعام الدراسي 1447 هـ
+      </div>
+
+      <div class="buttons">
+        <a class="btn gray" target="_blank" href="https://drive.google.com/drive/folders/1Pg1zZHWNiqtrPyAL5OQqZRW6l42CXx_h">📚 الأدلة الوزارية للاختبار</a>
+        <a class="btn btn-central" target="_blank" href="https://drive.google.com/file/d/16Gq7IqTpgbQt3yEZZjb8ovZfPQ6Mw2wL/view?usp=sharing">🧾 دليل الاختبارات المركزية</a>
+        <a class="btn" target="_blank" href="https://docs.google.com/spreadsheets/d/1rsCjVXm7FeLVKOrNvD9JlIE7nTFmaxUX/edit?gid=1878345266#gid=1878345266">📊 برنامج رصد للاختبارات المركزية</a>
+        <a class="btn secondary" target="_blank" href="https://docs.google.com/forms/d/e/1FAIpQLSdPOFC-NDnuasgh4Jr5xPRi1zCQaTlkvjBr-t1h6zAjXAP_7A/viewform">🕒⬆️ رابط رفع تقرير رصد اليومي</a>
+        <a class="btn" target="_blank" href="https://docs.google.com/spreadsheets/d/1QDgzz5kJHN0taKly3dpMYycV_vZrrFct/edit">📊 الملف التجميعي لرصد</a>
+        <a class="btn secondary" target="_blank" href="https://docs.google.com/forms/d/e/1FAIpQLSck63mj7RC9X_2A4rb024aIGJo2VQ7I6-c-_cny--u2-sh4XA/viewform">⬆️ رابط رفع الملف التجميعي لرصد</a>
+        <a class="btn dark" target="_blank" href="https://drive.google.com/drive/folders/1nO4a_V393dVpIAyqSy4i2LdoWlcyJOZS">⭐🌟 برنامج راصد والملف التجميعي للصفوف الأولية</a>
+        <a class="btn secondary" target="_blank" href="https://docs.google.com/forms/d/1gEga1Z5w5P2rNfFEFjtX_L525N03O4h5HN5Nks-S0KY/preview?edit_requested=true">🕒⬆️ رابط رفع التقرير اليومي راصد للصفوف الأولية</a>
+        <a class="btn btn-lavender" target="_blank" href="https://docs.google.com/forms/d/1R3xvPfPp1FP0wkL0Sw3nRz2N7h_a6Qm1-qxP70-Rh-Q/preview?edit_requested=true">🎒📤 رابط رفع ملف تجميعي راصد للصفوف الأولية</a>
+        <a class="btn gray" target="_blank" href="https://drive.google.com/drive/folders/1i-8TrdJzgBvGA0ShQecuozWMpUZfc3VX">🔐 وثيقة الالتزام والسرية</a>
+        <a class="btn gray" target="_blank" href="https://docs.google.com/forms/d/e/1FAIpQLSdMByjF0vePWkXO2dk41Pg8OWjiw3Bv6GhAPNXUhu3r0679XQ/viewform">📝 رابط رفع وثيقة الالتزام والسرية</a>
+        <a class="btn" target="_blank" href="https://drive.google.com/drive/folders/1tG0JlfQV56ZpMDKF81CsN2Ynv3PYDcDX?usp=drive_link">📑 ملفات دعم إثرائية</a>
+      </div>
+
+      <div class="contact">
+        📧 للتواصل:
+        <a href="mailto:Test@moe.gov.sa">Test@moe.gov.sa</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- شريط العد التنازلي (ثابت) -->
+  <div class="countdown-bar">
+    ⏳ متبقي على نهاية الفصل الدراسي الأول:
+    <span id="countdown">—</span>
+  </div>
+
+  <!-- الشريط المتحرك (يتحرك) -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <a href="#" onclick="return false;">
+        📌 الاختبارات المركزية فرصة ذهبية لتحسين الأداء ورفع التحصيل التعليمي
+        &nbsp; • &nbsp;
+        إدارة تقويم الأداء المعرفي والمهاري بتعليم جدة
+      </a>
+    </div>
+  </div>
+
+  <!-- سكربت العد التنازلي -->
+  <script>
+    const endDate = new Date("2026-01-08T23:59:59").getTime();
+    const countdownEl = document.getElementById("countdown");
+
+    function updateCountdown(){
+      const now = Date.now();
+      const diff = endDate - now;
+
+      if(diff <= 0){
+        countdownEl.textContent = "انتهى الفصل الدراسي 🎉";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      countdownEl.textContent = days + " يوم";
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 3600000);
+  </script>
+
+</body>
+</html>
