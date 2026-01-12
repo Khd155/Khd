@@ -48,7 +48,7 @@
       z-index:-1;
     }
 
-    /* شعار (بالشكل اللي تبيه) */
+    /* شعار */
     .brand{
       position: fixed;
       top: 0;
@@ -79,7 +79,6 @@
       white-space: nowrap;
     }
 
-    /* تغطية خفيفة (اختياري) */
     .overlay{ display:none; }
 
     /* الوسط */
@@ -155,7 +154,7 @@
     .btn.btn-central{ background:#ece6ff; }  /* بنفسجي فاتح */
     .btn.btn-lavender{ background:#e9e4ff; } /* لافندر */
 
-    /* التواصل (نص مو زر) */
+    /* التواصل */
     .contact{
       margin-top:16px;
       padding-top:12px;
@@ -178,7 +177,7 @@
     .countdown-bar{
       position:fixed;
       left:0; right:0;
-      bottom: var(--tick-h);
+      bottom: calc(var(--tick-h) + env(safe-area-inset-bottom, 0));
       height: var(--bar-h);
 
       display:flex;
@@ -199,95 +198,78 @@
       text-align:center;
     }
 
-    /* الشريط المتحرك (تحت) */
+    /* الشريط المتحرك (Loop ناعم بدون فراغ) */
     .ticker{
       position:fixed;
       left:0; right:0;
-      bottom:0;
+      bottom: calc(env(safe-area-inset-bottom, 0));
       height: var(--tick-h);
       overflow:hidden;
 
-      background: rgba(15,35,55,.80);
+      background: rgba(15,35,55,.92);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-top:1px solid rgba(255,255,255,.12);
-      z-index:998;
+      z-index: 998;
     }
+
     .ticker-track{
-      display:inline-block;
-      white-space:nowrap;
-      padding-left:100%;
-      animation:tickerMove 28s linear infinite;
+      height:100%;
+      display:flex;
+      align-items:center;
+      width:max-content;
+      animation: tickerMove 18s linear infinite;
+      will-change: transform;
     }
-    .ticker-track a{
-      display:inline-block;
-      padding-right:100%;
-      color:#9fe0ff;
-      text-decoration:none;
+
+    .ticker-item{
+      flex: 0 0 auto;
+      padding-inline: 24px;
+      white-space: nowrap;
       font-size:13px;
       font-weight:800;
+      color:#9fe0ff;
     }
+
     @keyframes tickerMove{
-      from{ transform: translateX(0); }
-      to{ transform: translateX(-100%); }
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
     }
 
-    /* تحسين الشعار للجوال */
-@media (max-width: 480px){
-  .brand{
-    padding: 10px 12px;     /* تقليل الإطار */
-    gap: 8px;
-  }
+    /* تحسينات للجوال */
+    @media (max-width: 480px){
+      .brand{
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .brand img{
+        height: 56px;
+      }
+      .brand span{
+        font-size: 11px;
+        line-height: 1.2;
+      }
 
-  .brand img{
-    height: 56px;           /* تصغير الشعار */
-  }
+      /* ننزل المحتوى عشان ما يتغطى */
+      .wrapper{
+        padding-top: 140px;
+      }
 
-  .brand span{
-    font-size: 11px;        /* تصغير النص */
-    line-height: 1.2;
-  }
+      /* سرعة الشريط بالجوال */
+      .ticker-track{
+        animation-duration: 13s;
+      }
 
-  /* ننزل المحتوى شوي عشان ما يتغطى */
-  .wrapper{
-    padding-top: 140px;
-
-/* ضمان ظهور الشريط في الجوال + دعم safe-area */
-.ticker{
-  z-index: 99999;
-  bottom: env(safe-area-inset-bottom, 0);
-  background: rgba(15,35,55,.92); /* أغمق عشان يبان */
-}
-
-/* لو فيه iPhone: ارفع الشريط شوي عشان ما ينطمر */
-@media (max-width: 480px){
-  .ticker{
-    bottom: calc(env(safe-area-inset-bottom, 0) + 6px);
-  }
-
-  /* تأكد العدّاد فوقه مضبوط */
-  .countdown-bar{
-    bottom: calc(var(--tick-h) + env(safe-area-inset-bottom, 0) + 6px);
-  }
-}
-
-
-}
-}
-
-  
-  
-  
-  
-  
-  
-  
+      .ticker-item{
+        font-size: 12px;
+        padding-inline: 18px;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- الشعار الجديد -->
   <div class="brand">
     <span>وزارة التعليم<br>Ministry of Education</span>
     <img src="logo.png" alt="شعار تعليم جدة">
@@ -329,20 +311,21 @@
     </div>
   </div>
 
-  <!-- شريط العد التنازلي (ثابت) -->
+  <!-- شريط العد التنازلي -->
   <div class="countdown-bar">
     ⏳ متبقي على نهاية الفصل الدراسي الأول:
     <span id="countdown">—</span>
   </div>
 
-  <!-- الشريط المتحرك (يتحرك) -->
+  <!-- الشريط المتحرك (مكرر مرتين عشان Loop ناعم) -->
   <div class="ticker">
     <div class="ticker-track">
-      <a href="#" onclick="return false;">
-        📌 الاختبارات المركزية فرصة ذهبية لتحسين الأداء ورفع التحصيل التعليمي
-        &nbsp; • &nbsp;
-        إدارة تقويم الأداء المعرفي والمهاري بتعليم جدة
-      </a>
+      <div class="ticker-item">
+        📌 الاختبارات المركزية فرصة ذهبية لتحسين الأداء ورفع التحصيل التعليمي • إدارة تقويم الأداء المعرفي والمهاري بتعليم جدة
+      </div>
+      <div class="ticker-item" aria-hidden="true">
+        📌 الاختبارات المركزية فرصة ذهبية لتحسين الأداء ورفع التحصيل التعليمي • إدارة تقويم الأداء المعرفي والمهاري بتعليم جدة
+      </div>
     </div>
   </div>
 
